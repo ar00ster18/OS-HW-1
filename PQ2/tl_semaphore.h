@@ -19,9 +19,8 @@
 */
 typedef struct
 {
-
-
-
+    atomic_int ticket;
+    atomic_int cur_ticket;
 
 } ticket_lock;
 
