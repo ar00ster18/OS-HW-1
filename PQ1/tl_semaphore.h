@@ -21,11 +21,13 @@ typedef struct
 
 } ticket_lock;
 
-
+// initializes the Ticket Lock
 void ticketlock_init(ticket_lock* lock);
 
+// Aquires the Ticket Lock (wait for turn)
 void ticketlock_acquire(ticket_lock* lock);
 
+// Releases the Ticket Lock
 void ticketlock_release(ticket_lock* lock);
 
 
@@ -34,7 +36,7 @@ void ticketlock_release(ticket_lock* lock);
    SEMAPHORE
    ========================= */
 
-// struct for semaphore
+// struct for  an unbounded semaphore protected by a ticket lock
 
 typedef struct
 {
@@ -44,11 +46,13 @@ typedef struct
 
 } semaphore;
 
-
+// Initialized the semaphore with an initial value
 void semaphore_init(semaphore* sem, int initial_value);
 
+// Decrements the semaphore aka waits for resource
 void semaphore_wait(semaphore* sem);
 
+// Increments semaphore aka signals resource is avalible
 void semaphore_signal(semaphore* sem);
 
 
