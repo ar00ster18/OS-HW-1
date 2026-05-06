@@ -15,21 +15,21 @@ void ticketlock_init(ticket_lock* lock)
 /* Acquires the ticket lock.
  * Atomically grabs a ticket number, then busy-waits (yielding) until
  * cur_ticket reaches our ticket, guaranteeing FIFO acquisition order. */
-void ticketlock_acquire(ticket_lock*lock)
+void ticketlock_acquire(ticket_lock* lock)
 {
     // get my ticket
     int my_ticket = atomic_fetch_add(&lock->ticket, 1);
 
     // wait until it is my turn
-    while(atomic_load(&lock->cur_ticket) !=my_ticket)
+    while (atomic_load(&lock->cur_ticket) != my_ticket)
     {
-    sched_yield();
+        sched_yield();
     }
 }
 
 /* Releases the ticket lock by incrementing cur_ticket,
  * allowing the next waiting thread to proceed. */
-void ticketlock_release(ticket_lock*lock)
+void ticketlock_release(ticket_lock* lock)
 {
     atomic_fetch_add(&lock->cur_ticket, 1);
 }
@@ -43,7 +43,8 @@ void ticketlock_release(ticket_lock*lock)
  * and initializes its internal ticket lock. */
 void semaphore_init(semaphore* sem, int initial_value)
 {
-    // TODO
+    sem->value = initial_value;
+    ticketlock_init(&sem->lock);
 }
 
 /* Decrements the semaphore value (P / down / wait).
@@ -52,7 +53,28 @@ void semaphore_init(semaphore* sem, int initial_value)
  * then decrements. The internal ticket lock protects value access. */
 void semaphore_wait(semaphore* sem)
 {
-    // TODO
+    ticketlock_acquire(&sem->lock);
+    if (sem->value > 0)
+    {
+        sem->value--;
+        ticketlock_release(&sem->lock);
+    }
+    else
+    {
+        ticketlock_release(&sem->lock);
+        while (1)
+        {
+            sched_yield();
+            ticketlock_acquire(&sem->lock);
+            if (sem->value > 0)
+            {
+                sem->value--;
+                ticketlock_release(&sem->lock);
+                break;
+            }
+            ticketlock_release(&sem->lock);
+        }
+    }
 }
 
 /* Increments the semaphore value (V / up / signal).
@@ -60,5 +82,7 @@ void semaphore_wait(semaphore* sem)
  * allowing any waiting thread in semaphore_wait to eventually proceed. */
 void semaphore_signal(semaphore* sem)
 {
-    // TODO
+    ticketlock_acquire(&sem->lock);
+    sem->value++;
+    ticketlock_release(&sem->lock);
 }

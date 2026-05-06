@@ -18,7 +18,6 @@ typedef struct
 {
     atomic_int ticket;
     atomic_int cur_ticket;
-
 } ticket_lock;
 
 // initializes the Ticket Lock
@@ -40,10 +39,8 @@ void ticketlock_release(ticket_lock* lock);
 
 typedef struct
 {
-
     int value;
     ticket_lock lock;
-
 } semaphore;
 
 // Initialized the semaphore with an initial value
