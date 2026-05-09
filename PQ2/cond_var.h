@@ -1,17 +1,20 @@
 #ifndef COND_VAR_H
 #define COND_VAR_H
 
+#include <stdatomic.h>
 #include "tl_semaphore.h"
 
 /* =========================
    CONDITION VARIABLE
    ========================= */
 
+#define CV_MAX_WAITERS 64
+
 typedef struct
 {
-    int num_waiters;           /* number of threads currently waiting */
-    ticket_lock internal_lock; /* protects num_waiters */
-    semaphore sem;             /* threads block here (initialized to 0) */
+    semaphore* waiters[CV_MAX_WAITERS]; /* pointers to per-thread semaphores */
+    atomic_int num_waiters;             /* number of threads currently waiting */
+    ticket_lock internal_lock;          /* protects waiters[] and num_waiters */
 
 } condition_variable;
 
