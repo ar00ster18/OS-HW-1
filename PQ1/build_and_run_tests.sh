@@ -38,9 +38,10 @@ run_test()
     fi
 }
 
-compile "tests/test_unit.c"       "output/test_unit"       ""          && run_test "./output/test_unit"
-compile "tests/test_concurrent.c" "output/test_concurrent" "-pthread"  && run_test "./output/test_concurrent"
-compile "tests/test_stress.c"     "output/test_stress"     "-pthread"  && run_test "./output/test_stress"
+compile "tests/test_unit.c"             "output/test_unit"             ""         && run_test "./output/test_unit"
+compile "tests/test_sequential_stress.c" "output/test_sequential_stress" ""         && run_test "./output/test_sequential_stress"
+compile "tests/test_concurrent.c"       "output/test_concurrent"       "-pthread" && run_test "./output/test_concurrent"
+compile "tests/test_stress.c"           "output/test_stress"           "-pthread" && run_test "./output/test_stress"
 
 if [ $FAILED -eq 0 ]; then
     echo ""
