@@ -9,8 +9,10 @@
 
 typedef struct
 {
-    semaphore waiters;
-    ticket_lock* ext_lock;
+    int num_waiters;           /* number of threads currently waiting */
+    ticket_lock internal_lock; /* protects num_waiters */
+    semaphore sem;             /* threads block here (initialized to 0) */
+
 } condition_variable;
 
 
