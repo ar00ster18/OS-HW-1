@@ -97,11 +97,11 @@ void rwlock_acquire_write(rwlock* lock)
                                 &lock->lock);
     }
 
-    /* writer is no longer waiting */
-    lock->waiting_writers--;
-
-    /* writer enters exclusively */
+        /* writer enters exclusively */
     lock->active_writer = 1;
+
+        /* writer is no longer waiting */
+    lock->waiting_writers--;
 
     /* release internal state lock */
     ticketlock_release(&lock->lock);
