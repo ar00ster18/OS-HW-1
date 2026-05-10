@@ -10,7 +10,7 @@
 
 #define NUM_READERS 8
 #define NUM_WRITERS 4
-#define NUM_ITERATIONS 100
+#define NUM_ITERATIONS 10000
 
 
 rwlock lock;
@@ -74,7 +74,7 @@ void* writer_thread(void* arg)
         active_writers = 1;
 
         /* small delay increases concurrency chance */
-        sleep(1);
+        sched_yield();
 
         active_writers = 0;
 

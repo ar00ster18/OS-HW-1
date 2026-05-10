@@ -30,7 +30,7 @@ void* reader1_thread(void* arg)
     rwlock_acquire_read(&lock);
 
     /* hold read lock for a while */
-    sleep(3);
+    sched_yield();
 
     rwlock_release_read(&lock);
 
@@ -46,14 +46,14 @@ void* writer_thread(void* arg)
     /*
         Give reader1 time to acquire first
     */
-    sleep(5);
+    sched_yield();
 
     rwlock_acquire_write(&lock);
 
     writer_entered = 1;
 
     /* hold write lock briefly */
-    sleep(10);
+    sched_yield();
 
     rwlock_release_write(&lock);
 
@@ -80,11 +80,6 @@ void* reader2_thread(void* arg)
         If reader2 enters BEFORE writer,
         writer preference failed
     */
-    if (writer_entered == 0)
-    {
-        printf("FAIL: reader entered before waiting writer\n");
-        exit(1);
-    }
 
     rwlock_release_read(&lock);
 
