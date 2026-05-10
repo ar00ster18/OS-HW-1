@@ -35,7 +35,7 @@ void* reader_thread(void* arg)
     }
 
     /* force overlap between readers */
-    usleep(100000);
+    sleep(1);
 
     /* reader leaving */
     current_readers--;

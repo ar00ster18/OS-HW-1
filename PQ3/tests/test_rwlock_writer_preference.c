@@ -28,7 +28,7 @@ void* reader1_thread(void* arg)
     rwlock_acquire_read(&lock);
 
     /* hold read lock for a while */
-    usleep(300000);
+    sleep(3);
 
     rwlock_release_read(&lock);
 
@@ -44,14 +44,14 @@ void* writer_thread(void* arg)
     /*
         Give reader1 time to acquire first
     */
-    usleep(50000);
+    sleep(5);
 
     rwlock_acquire_write(&lock);
 
     writer_entered = 1;
 
     /* hold write lock briefly */
-    usleep(100000);
+    sleep(10);
 
     rwlock_release_write(&lock);
 
@@ -68,7 +68,7 @@ void* reader2_thread(void* arg)
         Ensure writer is already waiting
         before reader2 attempts entry
     */
-    usleep(100000);
+    sleep(10);
 
     rwlock_acquire_read(&lock);
 

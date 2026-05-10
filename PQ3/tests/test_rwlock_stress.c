@@ -39,7 +39,7 @@ void* reader_thread(void* arg)
         active_readers++;
 
         /* small delay increases concurrency chance */
-        usleep(10);
+        sleep(1);
 
         active_readers--;
 
@@ -72,7 +72,7 @@ void* writer_thread(void* arg)
         active_writers = 1;
 
         /* small delay increases concurrency chance */
-        usleep(10);
+        sleep(1);
 
         active_writers = 0;
 

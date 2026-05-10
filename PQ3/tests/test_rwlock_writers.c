@@ -37,7 +37,7 @@ void* writer_thread(void* arg)
     }
 
     /* force overlap attempt */
-    usleep(100000);
+    sleep(1);
 
     active_writers--;
 
