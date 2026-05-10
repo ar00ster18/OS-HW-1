@@ -1,66 +1,55 @@
 #ifndef RW_LOCK_H
 #define RW_LOCK_H
 
-/* =========================
-   REQUIRED INCLUDES FROM PQ1 & PQ2
-   ========================= */
-
 #include "tl_semaphore.h"
 #include "cond_var.h"
 
 
 /* =========================
-   READER WRITER LOCK
+   READERS-WRITER LOCK
    ========================= */
 
 /*
-    Writer-preference reader-writer lock.
-
-    - Multiple readers may enter simultaneously
-    - Writers require exclusive access
-    - Waiting writers block new readers
-*/
+ * Writer-preference readers-writer lock.
+ *
+ * Guarantees:
+ *   - Multiple readers may hold the lock simultaneously.
+ *   - A writer requires exclusive access (no readers or other writers).
+ *   - If any writer is waiting, new readers are blocked (writer preference),
+ *     preventing writer starvation.
+ */
 typedef struct
 {
-    /* protects all internal state */
-    ticket_lock lock;
+    ticket_lock lock;           /* protects all fields below */
 
-    /* condition variable for waiting readers */
-    condition_variable readers_cv;
+    condition_variable readers_cv; /* readers wait here when a writer holds or is waiting */
+    condition_variable writers_cv; /* writers wait here when readers or a writer is active */
 
-    /* condition variable for waiting writers */
-    condition_variable writers_cv;
-
-    /* number of readers currently holding lock */
-    int active_readers;
-
-    /* number of writers waiting to acquire */
-    int waiting_writers;
-
-    /* whether writer currently holds lock (0/1) */
-    int active_writer;
+    int active_readers;  /* number of readers currently holding the lock */
+    int waiting_writers; /* number of writers waiting to acquire */
+    int active_writer;   /* 1 if a writer currently holds the lock, 0 otherwise */
 
 } rwlock;
 
 
-/* initializes the read-write lock */
 void rwlock_init(rwlock* lock);
+/* Initializes the RW-lock. Must be called before any other operation. */
 
-
-/* acquires lock for reading */
 void rwlock_acquire_read(rwlock* lock);
+/* Acquires the lock for reading.
+ * Blocks if a writer holds the lock or any writer is waiting (writer preference). */
 
-
-/* releases read lock */
 void rwlock_release_read(rwlock* lock);
+/* Releases the read lock.
+ * If this was the last active reader and writers are waiting, wakes one writer. */
 
-
-/* acquires lock for writing (exclusive access) */
 void rwlock_acquire_write(rwlock* lock);
+/* Acquires the lock for writing (exclusive access).
+ * Blocks until no readers and no other writer hold the lock. */
 
-
-/* releases write lock */
 void rwlock_release_write(rwlock* lock);
+/* Releases the write lock.
+ * Wakes a waiting writer if one exists; otherwise wakes all waiting readers. */
 
 
 #endif

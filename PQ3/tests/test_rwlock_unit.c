@@ -4,7 +4,7 @@
 #include <sched.h>
 #include <stdatomic.h>
 
-#include "../rw_lock.h"
+#include "rw_lock.h"
 
 
 int main(void)
