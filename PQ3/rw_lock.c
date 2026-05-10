@@ -19,7 +19,7 @@ void rwlock_init(rwlock* lock)
     /*Initially there are no active readers*/
     lock->active_readers = 0;
 
-    /*Initially there are no writing writers*/
+    /*Initially there are no waiting writers*/
     lock->waiting_writers = 0;
 
     /*Initially there are no active writers*/
@@ -29,17 +29,51 @@ void rwlock_init(rwlock* lock)
 
 void rwlock_acquire_read(rwlock* lock)
 {
+        /* protect internal state */
+    ticketlock_acquire(&lock->lock);
+
     /*
-        IMPLEMENT HERE
+        Readers must wait if:
+        - a writer currently holds the lock
+        - writers are waiting (writer preference)
     */
+    while (lock->active_writer == 1 ||
+           lock->waiting_writers > 0)
+    {
+        condition_variable_wait(&lock->readers_cv,
+                                &lock->lock);
+    }
+
+    /* reader enters */
+    lock->active_readers++;
+
+    /* release internal state lock */
+    ticketlock_release(&lock->lock);
+
 }
 
 
 void rwlock_release_read(rwlock* lock)
 {
+   /* protect internal state */
+    ticketlock_acquire(&lock->lock);
+
+    /* reader leaves */
+    lock->active_readers--;
+
     /*
-        IMPLEMENT HERE
+        If this was the last reader
+        and writers are waiting,
+        wake one writer
     */
+    if (lock->active_readers == 0 &&
+        lock->waiting_writers > 0)
+    {
+        condition_variable_signal(&lock->writers_cv);
+    }
+
+    /* release internal state lock */
+    ticketlock_release(&lock->lock);
 }
 
 
