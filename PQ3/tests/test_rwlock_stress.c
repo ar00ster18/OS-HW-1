@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sched.h>
+#include <stdatomic.h>
 
 #include "../rw_lock.h"
 
@@ -14,8 +16,8 @@
 rwlock lock;
 
 /* shared state for validation */
-int active_readers = 0;
-int active_writers = 0;
+atomic_int active_readers = 0;
+atomic_int active_writers = 0;
 
 
 /* reader thread */
@@ -39,7 +41,7 @@ void* reader_thread(void* arg)
         active_readers++;
 
         /* small delay increases concurrency chance */
-        sleep(1);
+        sched_yield();
 
         active_readers--;
 

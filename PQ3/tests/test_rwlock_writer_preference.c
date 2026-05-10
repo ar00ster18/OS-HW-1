@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sched.h>
+#include <stdatomic.h>
 
 #include "../rw_lock.h"
 
@@ -68,7 +70,7 @@ void* reader2_thread(void* arg)
         Ensure writer is already waiting
         before reader2 attempts entry
     */
-    sleep(10);
+    sched_yield();
 
     rwlock_acquire_read(&lock);
 

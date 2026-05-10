@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sched.h>
+#include <stdatomic.h>
 
 #include "../rw_lock.h"
 
@@ -12,7 +14,7 @@
 rwlock lock;
 
 /* number of writers currently inside critical section */
-int active_writers = 0;
+atomic_int active_writers = 0;
 
 /* tracks whether exclusivity was violated */
 int violation_detected = 0;

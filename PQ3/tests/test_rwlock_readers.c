@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sched.h>
+#include <stdatomic.h>
 
 #include "../rw_lock.h"
 

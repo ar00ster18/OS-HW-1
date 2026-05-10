@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sched.h>
+#include <stdatomic.h>
 
 #include "../rw_lock.h"
 
