@@ -79,15 +79,59 @@ void rwlock_release_read(rwlock* lock)
 
 void rwlock_acquire_write(rwlock* lock)
 {
+    /* protect internal state */
+    ticketlock_acquire(&lock->lock);
+
+    /* writer announces it is waiting */
+    lock->waiting_writers++;
+
     /*
-        IMPLEMENT HERE
+        Writers must wait if:
+        - another writer is active
+        - readers are active
     */
+    while (lock->active_writer == 1 ||
+           lock->active_readers > 0)
+    {
+        condition_variable_wait(&lock->writers_cv,
+                                &lock->lock);
+    }
+
+    /* writer is no longer waiting */
+    lock->waiting_writers--;
+
+    /* writer enters exclusively */
+    lock->active_writer = 1;
+
+    /* release internal state lock */
+    ticketlock_release(&lock->lock);
 }
 
 
 void rwlock_release_write(rwlock* lock)
 {
+    /* protect internal state */
+    ticketlock_acquire(&lock->lock);
+
+    /* writer leaves */
+    lock->active_writer = 0;
+
     /*
-        IMPLEMENT HERE
+        Writer preference:
+        if writers are waiting,
+        wake one writer.
+
+        Otherwise wake all readers.
     */
+    if (lock->waiting_writers > 0)
+    {
+        condition_variable_signal(&lock->writers_cv);
+    }
+    else
+    {
+        condition_variable_broadcast(&lock->readers_cv);
+    }
+
+    /* release internal state lock */
+    ticketlock_release(&lock->lock);
 }
