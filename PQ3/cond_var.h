@@ -4,10 +4,24 @@
 #include <stdatomic.h>
 #include "tl_semaphore.h"
 
+
 /* =========================
    CONDITION VARIABLE
    ========================= */
 
+/*
+ * Condition variable backed by per-thread semaphores.
+ *
+ * Each waiting thread allocates its own semaphore on the stack and registers
+ * a pointer to it here. Signal/broadcast operate on specific semaphore
+ * pointers, preventing signal leakage across wait cycles.
+ *
+ * Correctness rules:
+ *   - Signals are NOT remembered: signal/broadcast when no threads are
+ *     waiting has no effect.
+ *   - No lost notifications: a thread that has started waiting will
+ *     eventually be woken by a subsequent signal/broadcast.
+ */
 #define CV_MAX_WAITERS 64
 
 typedef struct
@@ -19,42 +33,31 @@ typedef struct
 } condition_variable;
 
 
+/**
+ * Initializes the condition variable.
+ */
 void condition_variable_init(condition_variable* cv);
-/*
- * Initializes the condition variable pointed to by 'cv'.
- */
 
+/**
+ * Causes the calling thread to wait on 'cv'.
+ *
+ * Precondition: the caller holds 'ext_lock'.
+ * The function releases 'ext_lock' while waiting and reacquires it
+ * before returning, so the caller always holds the lock on return.
+ */
 void condition_variable_wait(condition_variable* cv, ticket_lock* ext_lock);
-/*
- * Precondition: the calling thread holds 'ext_lock'.
- *
- * Causes the calling thread to wait on the condition variable 'cv'.
- * While waiting, the thread must release 'ext_lock' and must reacquire it before returning.
- *
- * IMPORTANT correctness rules (no "lost notifications"):
- *
- * - Signals are NOT remembered:
- *   If condition_variable_signal/broadcast is called when no threads are waiting,
- *   it has no effect.
- *
- * - A waiting thread must not get "stuck" due to a race:
- *   If a thread T is inside condition_variable_wait (it has started the wait operation
- *   and has not returned yet), and another thread later calls
- *   condition_variable_signal/broadcast, then T must eventually wake and return
- *   (after reacquiring ext_lock).
- */
 
+/**
+ * Wakes up exactly one thread currently waiting on 'cv'.
+ * If no threads are waiting, does nothing.
+ */
 void condition_variable_signal(condition_variable* cv);
-/*
- * Wakes up exactly one thread currently waiting on the condition variable 'cv' (if any).
- * If no threads are waiting, this function does nothing.
- */
 
-void condition_variable_broadcast(condition_variable* cv);
-/*
- * Wakes up all threads currently waiting on the condition variable 'cv'.
- * If no threads are waiting, this function does nothing.
+/**
+ * Wakes up all threads currently waiting on 'cv'.
+ * If no threads are waiting, does nothing.
  */
+void condition_variable_broadcast(condition_variable* cv);
 
 
 #endif
