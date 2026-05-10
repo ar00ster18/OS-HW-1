@@ -2,7 +2,7 @@
 #define RW_LOCK_H
 
 /* =========================
-   REQUIRED INCLUDES
+   REQUIRED INCLUDES FROM PQ1 & PQ2
    ========================= */
 
 #include "tl_semaphore.h"
