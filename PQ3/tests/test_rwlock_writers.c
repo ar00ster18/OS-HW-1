@@ -37,7 +37,7 @@ void* writer_thread(void* arg)
     }
 
     /* force overlap attempt */
-    sched_yeild();
+    sched_yield();
 
     active_writers--;
 

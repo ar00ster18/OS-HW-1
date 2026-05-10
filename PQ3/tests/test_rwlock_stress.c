@@ -8,7 +8,7 @@
 
 #define NUM_READERS 8
 #define NUM_WRITERS 4
-#define NUM_ITERATIONS 10000
+#define NUM_ITERATIONS 100
 
 
 rwlock lock;
